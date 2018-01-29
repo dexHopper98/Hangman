@@ -26,18 +26,19 @@ public class WordGenerator {
 	private List<String> generatedWords;
 	
 	/**
-	 * 
-	 * @param file - the path to the file
-	 * @param delimiter - the delimiter that separates words
+	 * Constructor that initializes from a file location.
+	 * @param fileLoc - the path to the file
+	 * @param delimiter - the delimiter that separates words in file
 	 */
-	public WordGenerator(String file, String delimiter){
+	public WordGenerator(String fileLoc, String delimiter){
 		generatedWords = new ArrayList<>();
 		
 		//attempt to load the file of words
-		loadFromFile(file, delimiter);
+		loadFromFile(fileLoc, delimiter);
 	}
+	
 	/**
-	 * 
+	 * Constructor that initializes from given list of words
 	 * @param words
 	 */
 	public WordGenerator(List<String> words){
