@@ -3,9 +3,12 @@ package com.hangman;
 //jdk 1.7
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
+
 
 //hangman libs
 import com.hangman.generator.WordGenerator;
+import com.hangman.validator.GuessValidator;
 import com.hangman.validator.InputValidator;
 
 /**************************************************************************
@@ -19,7 +22,7 @@ import com.hangman.validator.InputValidator;
 
 public class HangMan {
 	private List<String> userGuesses;
-	private InputValidator input;
+	private InputValidator validator;
 	private int maxGuesses;
 	
 	//variables for word generation
@@ -51,6 +54,21 @@ public class HangMan {
 		this.maxGuesses = maxGuesses;
 		this.wordListFile = wordListFile;
 		this.fileDelimitter = fileDelimitter;
+		this.userGuesses = new ArrayList<>();
+		
+		//initialize validator with desired rules
+		setValidatorRules();
+	}
+	
+	/**
+	 * Sets the validator rules for this game. Rules are as follows:
+	 * 1) acceptable input is a single letter or a word
+	 * 2) no numbers or special characters
+	 * 3) upper or lowercase letters shouldn't matter
+	 * Child classes should override this method to set their own unique rules.
+	 */
+	protected void setValidatorRules(){
+		this.validator = new GuessValidator(true, false, false, true);
 	}
 	
 	/**
@@ -59,7 +77,8 @@ public class HangMan {
 	public static void main(String[] args) {
 		//TODO determine the constructor to run based on args passed
 		HangMan hg = new HangMan(5);
-		hg.run();
+		//hg.run();
+		hg.getUserInput();
 	}
 	
 	/**
@@ -74,13 +93,11 @@ public class HangMan {
 		
 		//display underscores for each letter of word for user
 		List<String> underscores = generateUnderScores(wordToGuess);
-		System.out.println("The word to guess: " + wordToGuess);
-		for (String string : underscores) {
-			System.out.println(string);
-		}
 		
+		System.out.println("Please guess your letter. \n");
+
 		while(!isSolved && guessesMade <= maxGuesses){
-			//receive and validate user input(HangManValidator)
+			//receive and validate user input
 			
 			//Determine guess made. if single letter guess, check if correct or not
 			
@@ -131,11 +148,29 @@ public class HangMan {
 	}
 	
 	/**
-	 * 
+	 * Retrieves user input and validates it according to validator settings.
+	 * @return - The validated input
 	 */
-	protected void getUserInput(){
-		//get the user input 
+	protected String getUserInput(){
+		String userInput = null;
+		boolean validInput;
 		
-		//validate user input(HangManValidator)
+		//get the user input 
+		Scanner sc = new Scanner(System.in);
+		while(sc.hasNext()){
+			String input = sc.next();
+			System.out.println(input);
+			
+			//validate user input
+			validInput = validator.validateInput(input);
+			
+			//exit once we get valid input
+			if(validInput) break;
+		}
+		
+		//close when finish
+		sc.close();
+		
+		return userInput;	
 	}
 }

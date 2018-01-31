@@ -12,10 +12,11 @@ package com.hangman.validator;
 public interface InputValidator  {
 	
 	/**
-	 * Receives an input object and validates it according to validator rules
-	 * @param input
+	 * Receives an input object and validates it according to validator rules. 
+	 * @param input - The input data to validate
+	 * @return - True or False, corresponding whether input validated successfully or not.
 	 */
-	public abstract void validateInput(Object input);
+	public abstract boolean validateInput(Object input);
 		
 }
 
