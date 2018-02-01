@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Scanner;
 
 
-
 //hangman libs
 import com.hangman.generator.WordGenerator;
 import com.hangman.validator.GuessValidator;
@@ -79,7 +78,6 @@ public class HangMan {
 		//TODO determine the constructor to run based on args passed
 		HangMan hg = new HangMan(5);
 		//hg.run();
-		//hg.getUserInput();
 	}
 	
 	/**
@@ -161,13 +159,13 @@ public class HangMan {
 		Scanner sc = new Scanner(System.in);
 		while(sc.hasNext()){
 			String input = sc.next();
-			System.out.println(input);
 			
 			//validate user input
 			validInput = validator.validateInput(input);
 			
 			//exit once we get valid input
 			if(validInput) break;
+			else System.out.println("Invalid input! Please give valid alpha character(s). \n");
 		}
 		
 		//close when finish

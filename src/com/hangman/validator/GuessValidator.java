@@ -1,4 +1,8 @@
 package com.hangman.validator;
+
+import java.util.Arrays;
+import java.util.List;
+
 /**************************************************************************
  * <b>Title:</b> com.hangman.GuessValidator.java
  * <b>Project:</b>HangMan
@@ -41,10 +45,11 @@ public class GuessValidator implements DataValidator<String> {
 	 * @see com.hangman.validator.InputValidator#validateInput(java.lang.Object)
 	 */
 	@Override
-	public boolean validateInput(String input) {
-		boolean isValidInput = false;		
+	public boolean validateInput(String input) throws Exception {
+		boolean isValidInput = true;		
 		
 		//determine if digits are allowed
+		isValidInput = checkDigits(input);
 		
 		//determine if special characters are allowed
 				
@@ -53,6 +58,25 @@ public class GuessValidator implements DataValidator<String> {
 		//determine if uppercase characters are allowed
 		
 		return isValidInput;
+	}
+	
+	/**
+	 * Helper method to verify if the given input allows digits or not
+	 * @param input
+	 * @return
+	 */
+	private boolean checkDigits(String input){
+		boolean result = true;
+		if(allowDigits) return result; //if digits are allowed, nothing to check
+		
+		List<String> digits = Arrays.asList("0", "1", "2", "3", "4", "5", "6", "7", "8", "9");
+		for (String d : digits) {
+			if(input.indexOf(d) > -1){
+				result = false;
+				break;
+			}
+		}
+		return result;
 	}
 
 	
