@@ -6,10 +6,11 @@ import java.util.List;
 import java.util.Scanner;
 
 
+
 //hangman libs
 import com.hangman.generator.WordGenerator;
 import com.hangman.validator.GuessValidator;
-import com.hangman.validator.InputValidator;
+import com.hangman.validator.DataValidator;
 
 /**************************************************************************
  * <b>Title:</b> com.hangmanHangMan.java
@@ -22,7 +23,7 @@ import com.hangman.validator.InputValidator;
 
 public class HangMan {
 	private List<String> userGuesses;
-	private InputValidator validator;
+	private DataValidator<String> validator;
 	private int maxGuesses;
 	
 	//variables for word generation
@@ -78,7 +79,7 @@ public class HangMan {
 		//TODO determine the constructor to run based on args passed
 		HangMan hg = new HangMan(5);
 		//hg.run();
-		hg.getUserInput();
+		//hg.getUserInput();
 	}
 	
 	/**
@@ -150,10 +151,11 @@ public class HangMan {
 	/**
 	 * Retrieves user input and validates it according to validator settings.
 	 * @return - The validated input
+	 * @throws Exception
 	 */
-	protected String getUserInput(){
+	protected String getUserInput() throws Exception{
 		String userInput = null;
-		boolean validInput;
+		boolean validInput = false;
 		
 		//get the user input 
 		Scanner sc = new Scanner(System.in);

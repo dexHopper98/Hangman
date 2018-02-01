@@ -9,7 +9,7 @@ package com.hangman.validator;
  * @since Jan 26, 2018
  ****************************************************/
 
-public class GuessValidator implements InputValidator {
+public class GuessValidator implements DataValidator<String> {
 	//member variable options with defaults of false
 	private boolean allowUpperCase;
 	private boolean allowDigits;
@@ -41,8 +41,8 @@ public class GuessValidator implements InputValidator {
 	 * @see com.hangman.validator.InputValidator#validateInput(java.lang.Object)
 	 */
 	@Override
-	public boolean validateInput(Object input) {
-		boolean isValidInput = false;
+	public boolean validateInput(String input) {
+		boolean isValidInput = false;		
 		
 		//determine if digits are allowed
 		
