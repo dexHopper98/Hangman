@@ -2,6 +2,8 @@ package com.hangman.validator;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**************************************************************************
  * <b>Title:</b> com.hangman.GuessValidator.java
@@ -52,7 +54,8 @@ public class GuessValidator implements DataValidator<String> {
 		isValidInput = checkDigits(input);
 		
 		//determine if special characters are allowed
-				
+		isValidInput = checkSpecialChars(input);
+		
 		//determine if an entire phrase is allowed
 		
 		//determine if uppercase characters are allowed
@@ -78,7 +81,25 @@ public class GuessValidator implements DataValidator<String> {
 		}
 		return result;
 	}
-
+	
+	/**
+	 * Helper method to determine if special characters are allowed or not. 
+	 * Special characters are any characters that are NOT letters, numbers, or white-spaces
+	 * @param input
+	 * @return
+	 */
+	private boolean checkSpecialChars(String input){
+		boolean result = true;
+		if(allowSpecialChars) return result;
+		
+		//If not an alpha character, number, or space, fail check
+		Pattern p = Pattern.compile("[^a-zA-Z\\s\\d]");
+		Matcher m = p.matcher(input);
+		if (m.find()) {
+			result = false;
+		}
+		return result;
+	}
 	
 	//=====Allow only getters to prevent changing how this validator instance processes mid-stream====//
 	/**
