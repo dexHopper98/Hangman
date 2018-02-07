@@ -13,7 +13,7 @@ import org.junit.Test;
 import com.hangman.validator.GuessValidator;
 
 /**************************************************************************
- * <b>Title:</b> com.hangman.test.GuessValidatorTester.java
+ * <b>Title:</b> com.hangman.test.GuessValidatorTest.java
  * <b>Project:</b>HangMan
  * <b>Description: JUnit test class to validate key methods of 
  * the GuessValidator class</b>
@@ -22,7 +22,7 @@ import com.hangman.validator.GuessValidator;
  * @since Feb 3, 2018
  ****************************************************/
 
-public class GuessValidatorTester {
+public class GuessValidatorTest {
 	//Our class to test
 	protected GuessValidator gv;
 	
@@ -33,6 +33,7 @@ public class GuessValidatorTester {
 	public void setUp() throws Exception {
 		/*Set all options to false, we want to verify each
 		*option truly validates correctly*/
+		//TODO allow validator class methods to be public
 		gv =  new GuessValidator(false, false, false, false);
 	}
 	
@@ -54,9 +55,7 @@ public class GuessValidatorTester {
 		assertFalse("Passing all special characters", gv.validateInput(b));
 		assertFalse("Passing a string with specials chars and non-special chars", gv.validateInput(c));
 		assertTrue("Passing a string with numbers", gv.validateInput(d));
-		assertTrue("Passing string with a space", gv.validateInput(e));
-		
-		fail("Not yet implemented");
+		assertTrue("Passing string with a space", gv.validateInput(e));		
 	}
 	
 	/**
@@ -68,4 +67,3 @@ public class GuessValidatorTester {
 	}
 
 }
-

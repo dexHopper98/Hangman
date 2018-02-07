@@ -1,5 +1,6 @@
 package com.hangman.validator;
 
+//jdk 1.7.x
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
