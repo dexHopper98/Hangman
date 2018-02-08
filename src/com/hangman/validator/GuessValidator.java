@@ -21,7 +21,10 @@ public class GuessValidator implements DataValidator<String> {
 	private boolean allowUpperCase;
 	private boolean allowDigits;
 	private boolean allowSpecialChars;
-	private boolean allowEntirePhraseGuess;
+	private boolean allowMultiCharacterGuess;
+	
+	//error message for retrieval if any validation checks fail
+	private String errorMessage;
 	
 	/**
 	 * Initializes class with all validation options set to false
@@ -35,21 +38,27 @@ public class GuessValidator implements DataValidator<String> {
 	 * @param allowUpperCase
 	 * @param allowDigits
 	 * @param allowSpecialChars
-	 * @param allowEntirePhraseGuess
+	 * @param allowMultiCharacterGuess
 	 */
-	public GuessValidator(boolean allowUpperCase, boolean allowDigits, boolean allowSpecialChars, boolean allowEntirePhraseGuess){
+	public GuessValidator(boolean allowUpperCase, boolean allowDigits, boolean allowSpecialChars, boolean allowMultiCharacterGuess){
 		this.allowUpperCase = allowUpperCase;
 		this.allowDigits = allowDigits;
 		this.allowSpecialChars = allowSpecialChars;
-		this.allowEntirePhraseGuess = allowEntirePhraseGuess;
+		this.allowMultiCharacterGuess = allowMultiCharacterGuess;
 	}
 	
-	/* (non-Javadoc)
-	 * @see com.hangman.validator.InputValidator#validateInput(java.lang.Object)
-	 */
+	/**
+	 * Wrapper method that validates input based on all the rules
+	 * set during construction.
+	 * */
 	@Override
 	public boolean validateInput(String input) throws Exception {
-		boolean isValidInput = true;		
+		boolean isValidInput = true;
+		//quick fail if unable to perform validation
+		if(input == null || input.length() == 0){
+			setErrorMessage("Cannot validate string of size 0, or null");
+			return false;
+		}
 		
 		//determine if digits are allowed
 		isValidInput = checkDigits(input);
@@ -58,7 +67,8 @@ public class GuessValidator implements DataValidator<String> {
 		isValidInput = checkSpecialChars(input);
 		
 		//determine if an entire phrase is allowed
-		
+		isValidInput = checkMultiCharacterGuess(input);
+				
 		//determine if uppercase characters are allowed
 		
 		return isValidInput;
@@ -69,7 +79,7 @@ public class GuessValidator implements DataValidator<String> {
 	 * @param input
 	 * @return
 	 */
-	private boolean checkDigits(String input){
+	public boolean checkDigits(String input){
 		boolean result = true;
 		if(allowDigits) return result; //if digits are allowed, nothing to check
 		
@@ -77,6 +87,7 @@ public class GuessValidator implements DataValidator<String> {
 		for (String d : digits) {
 			if(input.indexOf(d) > -1){
 				result = false;
+				setErrorMessage("Digits not allowed within input string");
 				break;
 			}
 		}
@@ -89,7 +100,7 @@ public class GuessValidator implements DataValidator<String> {
 	 * @param input
 	 * @return
 	 */
-	private boolean checkSpecialChars(String input){
+	public boolean checkSpecialChars(String input){
 		boolean result = true;
 		if(allowSpecialChars) return result;
 		
@@ -97,6 +108,24 @@ public class GuessValidator implements DataValidator<String> {
 		Pattern p = Pattern.compile("[^a-zA-Z\\s\\d]");
 		Matcher m = p.matcher(input);
 		if (m.find()) {
+			result = false;
+			setErrorMessage("Special characters not allowed within input string");
+		}
+		return result;
+	}
+	
+	/**
+	 * Validates that an entire phrase guess is allowed. An entire phrase is any input
+	 * that is beyond a single letter, validators may be limited to single or many letter inputs.
+	 * @param input
+	 * @return
+	 */
+	public boolean checkMultiCharacterGuess(String input){
+		boolean result = true;
+		if(allowMultiCharacterGuess) return result;
+		
+		if(input.length() > 1){
+			setErrorMessage("More than one character at time not allowed within input string");
 			result = false;
 		}
 		return result;
@@ -122,10 +151,21 @@ public class GuessValidator implements DataValidator<String> {
 		return allowSpecialChars;
 	}
 	/**
-	 * @return the allowEntirePhraseGuess
+	 * @return the allowMultiCharacterGuess
 	 */
-	public boolean isAllowEntirePhraseGuess() {
-		return allowEntirePhraseGuess;
+	public boolean isAllowMultiCharacterGuess() {
+		return allowMultiCharacterGuess;
+	}
+
+	/**
+	 * @return the errorMessage
+	 */
+	public String getErrorMessage() {
+		return errorMessage;
+	}
+	
+	private void setErrorMessage(String errorMessage){
+		this.errorMessage = errorMessage;
 	}
 
 }

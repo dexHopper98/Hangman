@@ -33,29 +33,53 @@ public class GuessValidatorTest {
 	public void setUp() throws Exception {
 		/*Set all options to false, we want to verify each
 		*option truly validates correctly*/
-		//TODO allow validator class methods to be public
 		gv =  new GuessValidator(false, false, false, false);
 	}
 	
 	@Test
-	public void testAreDigitsAllowed() {
-		fail("Not yet implemented");
+	public void digitsAreNotAllowedTest() {
+		//Fixtures
+		String no1 = "123";
+		String no2 = "456 64";
+		String no3 = "test64test";
+		String no4 = "normal string";
+		String no5 = "45.00";
+		
+		assertFalse("Input contains all digits", gv.checkDigits(no1));
+		assertFalse("Input contains all digits and a space", gv.checkDigits(no2));
+		assertFalse("Input contains digits and text", gv.checkDigits(no3));
+		assertTrue("Input contains no digits", gv.checkDigits(no4));
+		assertFalse("Input contains digits with a decimal", gv.checkDigits(no5));
 	}
 
 	@Test
-	public void testAreSpecialCharactersAllowed() throws Exception {
+	public void specialCharactersNotAllowedTest() {
 		//Fixtures
-		String a = "tA";
+		String a = "TAtaTa";
 		String b = "$%$^^%^&";
 		String c = " #$1fd235";
 		String d = "pe5opl3";
 		String e = "some times";
 		
-		assertTrue("No special characters given", gv.validateInput(a));
-		assertFalse("Passing all special characters", gv.validateInput(b));
-		assertFalse("Passing a string with specials chars and non-special chars", gv.validateInput(c));
-		assertTrue("Passing a string with numbers", gv.validateInput(d));
-		assertTrue("Passing string with a space", gv.validateInput(e));		
+		assertTrue("Input has no special characters", gv.checkSpecialChars(a));
+		assertFalse("Input has all special characters", gv.checkSpecialChars(b));
+		assertFalse("Input has specials chars and non-special chars", gv.checkSpecialChars(c));
+		assertTrue("Input has numbers and non-special chars", gv.checkSpecialChars(d));
+		assertTrue("Input has a space and non-speical chars", gv.checkSpecialChars(e));		
+	}
+	
+	@Test
+	public void multiCharactersNotAllowedTest(){
+		//Fixtures
+		String v = "@@";
+		String x = "a";
+		String y = "abc";
+		String z = "t  ";
+		
+		assertFalse("Input has multiple special characters", gv.checkMultiCharacterGuess(v));
+		assertTrue("Input has only one characters", gv.checkMultiCharacterGuess(x));
+		assertFalse("Input has multiple normal characters", gv.checkMultiCharacterGuess(y));
+		assertFalse("Input has single character with multiple spaces", gv.checkMultiCharacterGuess(z));
 	}
 	
 	/**
