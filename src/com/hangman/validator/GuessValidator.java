@@ -22,7 +22,8 @@ public class GuessValidator implements DataValidator<String> {
 	private boolean allowDigits;
 	private boolean allowSpecialChars;
 	private boolean allowMultiCharacterGuess;
-	
+	private boolean isValidInput;
+
 	//error message for retrieval if any validation checks fail
 	private String errorMessage;
 	
@@ -53,7 +54,6 @@ public class GuessValidator implements DataValidator<String> {
 	 * */
 	@Override
 	public boolean validateInput(String input) throws Exception {
-		boolean isValidInput = true;
 		//quick fail if unable to perform validation
 		if(input == null || input.length() == 0){
 			setErrorMessage("Cannot validate string of size 0, or null");
@@ -70,6 +70,7 @@ public class GuessValidator implements DataValidator<String> {
 		isValidInput = checkMultiCharacterGuess(input);
 				
 		//determine if uppercase characters are allowed
+		isValidInput = checkUpperCase(input);
 		
 		return isValidInput;
 	}
@@ -80,18 +81,17 @@ public class GuessValidator implements DataValidator<String> {
 	 * @return
 	 */
 	public boolean checkDigits(String input){
-		boolean result = true;
-		if(allowDigits) return result; //if digits are allowed, nothing to check
+		if(allowDigits) return isValidInput; //if digits are allowed, nothing to check
 		
 		List<String> digits = Arrays.asList("0", "1", "2", "3", "4", "5", "6", "7", "8", "9");
 		for (String d : digits) {
 			if(input.indexOf(d) > -1){
-				result = false;
-				setErrorMessage("Digits not allowed within input string");
+				isValidInput = false;
+				setErrorMessage("Digits are not allowed");
 				break;
 			}
 		}
-		return result;
+		return isValidInput;
 	}
 	
 	/**
@@ -101,17 +101,16 @@ public class GuessValidator implements DataValidator<String> {
 	 * @return
 	 */
 	public boolean checkSpecialChars(String input){
-		boolean result = true;
-		if(allowSpecialChars) return result;
+		if(allowSpecialChars) return isValidInput;
 		
 		//If not an alpha character, number, or space, fail check
 		Pattern p = Pattern.compile("[^a-zA-Z\\s\\d]");
 		Matcher m = p.matcher(input);
 		if (m.find()) {
-			result = false;
-			setErrorMessage("Special characters not allowed within input string");
+			isValidInput = false;
+			setErrorMessage("Special characters not allowed");
 		}
-		return result;
+		return isValidInput;
 	}
 	
 	/**
@@ -121,14 +120,37 @@ public class GuessValidator implements DataValidator<String> {
 	 * @return
 	 */
 	public boolean checkMultiCharacterGuess(String input){
-		boolean result = true;
-		if(allowMultiCharacterGuess) return result;
+		if(allowMultiCharacterGuess) return isValidInput;
 		
 		if(input.length() > 1){
-			setErrorMessage("More than one character at time not allowed within input string");
-			result = false;
+			setErrorMessage("More than one character at time not allowed");
+			isValidInput = false;
 		}
-		return result;
+		return isValidInput;
+	}
+	
+	/**
+	 * Validates that if capital letters are allowed within the given input.
+	 * @param input
+	 * @return
+	 */
+	public boolean checkUpperCase(String input){
+		if(allowUpperCase) return isValidInput;
+		
+		//start from 1 to account for blank character at beginning
+		String[] chars = input.split("");
+		for (int i=1; i < chars.length; i++) {
+			String ch = chars[i];
+			System.out.println("The char: " + ch);
+			
+			//search for the capital version of within input
+			if(ch.toUpperCase().equals(ch)){
+				setErrorMessage("Capital characters are not allowed");
+				isValidInput = false;
+			}
+		}
+		
+		return isValidInput;	
 	}
 	
 	//=====Allow only getters to prevent changing how this validator instance processes mid-stream====//
@@ -160,6 +182,7 @@ public class GuessValidator implements DataValidator<String> {
 	/**
 	 * @return the errorMessage
 	 */
+	@Override
 	public String getErrorMessage() {
 		return errorMessage;
 	}

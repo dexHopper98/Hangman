@@ -6,10 +6,11 @@ import java.util.List;
 import java.util.Scanner;
 
 
+
 //hangman libs
 import com.hangman.generator.WordGenerator;
-import com.hangman.validator.GuessValidator;
 import com.hangman.validator.DataValidator;
+import com.hangman.validator.GuessValidator;
 
 /**************************************************************************
  * <b>Title:</b> com.hangmanHangMan.java
@@ -62,9 +63,10 @@ public class HangMan {
 	
 	/**
 	 * Sets the validator rules for this game. Rules are as follows:
-	 * 1) acceptable input is a single letter or a word
-	 * 2) no numbers or special characters
-	 * 3) upper or lowercase letters shouldn't matter
+	 * 1) upper or lowercase letters shouldn't matter
+	 * 2) no numbers/digits
+	 * 3) no special characters
+	 * 4) a single letter or a word is acceptable input
 	 * Child classes should override this method to set their own unique rules.
 	 */
 	protected void setValidatorRules(){
@@ -77,7 +79,7 @@ public class HangMan {
 	public static void main(String[] args) {
 		//TODO determine the constructor to run based on args passed
 		HangMan hg = new HangMan(5);
-		//hg.run();
+		hg.run();
 	}
 	
 	/**
@@ -89,15 +91,19 @@ public class HangMan {
 		
 		boolean isSolved = false;
 		int guessesMade = 0;
+		String userInput;
 		
 		//display underscores for each letter of word for user
 		List<String> underscores = generateUnderScores(wordToGuess);
-		
-		System.out.println("Please guess your letter. \n");
+		System.out.println("Please make your guess. \n");
 
 		while(!isSolved && guessesMade <= maxGuesses){
 			//receive and validate user input
-			
+			try {
+				userInput = getUserInput();
+			} catch (Exception e) {
+				System.err.println("Error attempting to get user input: " + e);
+			}
 			//Determine guess made. if single letter guess, check if correct or not
 			
 			//if entire word guess, if incorrect game is over
@@ -165,7 +171,7 @@ public class HangMan {
 			
 			//exit once we get valid input
 			if(validInput) break;
-			else System.out.println("Invalid input! Please give valid alpha character(s). \n");
+			else System.out.println(validator.getErrorMessage() + "\nPlease provide a valid guess.");
 		}
 		
 		//close when finish

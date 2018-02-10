@@ -18,5 +18,10 @@ public interface DataValidator<T extends Object>  {
 	 */
 	public abstract boolean validateInput(T data) throws Exception;
 		
+	/**
+	 * Returns any generated error messages from failed validation checks
+	 * @return
+	 */
+	public abstract String getErrorMessage();
 }
 

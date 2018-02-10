@@ -82,6 +82,22 @@ public class GuessValidatorTest {
 		assertFalse("Input has single character with multiple spaces", gv.checkMultiCharacterGuess(z));
 	}
 	
+	@Test
+	public void upperCaseCharactersNotAllowedTest(){
+		//Fixtures
+		String a = "text";
+		String b = "v";
+		String c = "YOU";
+		String d = "camelCase";
+		String e = "w@rd pHarse";
+		
+		assertTrue("Input has no uppercase characters", gv.checkUpperCase(a));
+		assertTrue("Input is single letter with no uppercase", gv.checkUpperCase(b));
+		assertFalse("Input contains all uppercase characters", gv.checkUpperCase(c));
+		assertFalse("Input has lowercase and uppercase characters", gv.checkUpperCase(d));
+		assertFalse("Input has special characters and uppercase characters", gv.checkUpperCase(e));
+	}
+	
 	/**
 	 * @throws java.lang.Exception
 	 */
