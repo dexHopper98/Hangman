@@ -7,9 +7,9 @@ import java.util.Scanner;
 
 
 
+
 //hangman libs
 import com.hangman.generator.WordGenerator;
-import com.hangman.validator.DataValidator;
 import com.hangman.validator.GuessValidator;
 
 /**************************************************************************
@@ -23,14 +23,28 @@ import com.hangman.validator.GuessValidator;
 
 public class HangMan {
 	private List<String> userGuesses;
-	private DataValidator<String> validator;
-	private int maxGuesses;
+	private GuessValidator validator;
+	private int maxIncorrectGuesses;
+	private int guessesMade;
 	
 	//variables for word generation
 	private static final String DEFAULT_FILE_LOC = "./GuessWords/wordListOne.txt";
 	private static final String DEFAULT_FILE_DELIMITTER = ",";
 	private String wordListFile;
 	private String fileDelimitter;
+	
+	//enum containing the current guess status
+	enum GuessStatus{
+		CORRECT(0), INCORRECT(1), SOLVED(2), FAILED(3);
+		
+		private int value;
+		private GuessStatus(int value){
+			this.value = value;
+		}
+		public int getValue(){
+			return value;
+		}
+	}
 	
 	public HangMan(){
 		//set default values
@@ -47,12 +61,12 @@ public class HangMan {
 	
 	/**
 	 * Overloaded constructor to allow customized settings to game
-	 * @param maxGuesses - The max allowed guesses for the game
+	 * @param maxIncorrectGuesses - The max incorrect guesses allowed for the game
 	 * @param wordListFile - The file containing list of words for game
 	 * @param fileDelimitter - The delimitter between words in file
 	 */
-	public HangMan(int maxGuesses, String wordListFile, String fileDelimitter){
-		this.maxGuesses = maxGuesses;
+	public HangMan(int maxIncorrectGuesses, String wordListFile, String fileDelimitter){
+		this.maxIncorrectGuesses = maxIncorrectGuesses;
 		this.wordListFile = wordListFile;
 		this.fileDelimitter = fileDelimitter;
 		this.userGuesses = new ArrayList<>();
@@ -79,38 +93,39 @@ public class HangMan {
 	public static void main(String[] args) {
 		//TODO determine the constructor to run based on args passed
 		HangMan hg = new HangMan(5);
-		hg.run();
+		try {
+			hg.run();
+		} catch (Exception e) {
+			System.err.println("Error running hangman game: " + e);
+		}
 	}
 	
 	/**
 	 * Executes the game of Hangman
 	 */
-	public void run(){
-		String wordToGuess = retrieveWord();
-		if(wordToGuess == null) return; //exit if no word to guess
-		
+	public void run() throws Exception{
+		String wordToGuess = retrieveWord();	
 		boolean isSolved = false;
-		int guessesMade = 0;
 		String userInput;
 		
 		//display underscores for each letter of word for user
 		List<String> underscores = generateUnderScores(wordToGuess);
-		System.out.println("Please make your guess. \n");
+		
+		//display message about rules
+		System.out.println(generateGameMessage());
 
-		while(!isSolved && guessesMade <= maxGuesses){
-			//receive and validate user input
-			try {
+		//receive and validate user input
+		while(!isSolved && guessesMade <= maxIncorrectGuesses){
 				userInput = getUserInput();
-			} catch (Exception e) {
-				System.err.println("Error attempting to get user input: " + e);
-			}
-			//Determine guess made. if single letter guess, check if correct or not
-			
-			//if entire word guess, if incorrect game is over
-			
-			//track guess
-			
-			//continue until word is guess correctly or out of attempts	
+				
+				//determine if a single letter or if a entire guess
+				GuessStatus status = checkGuess(userInput, wordToGuess);
+				
+				switch(status){
+				//if entire word guess, if incorrect game is over
+
+				}
+				
 			break;
 		}
 	}
@@ -119,14 +134,14 @@ public class HangMan {
 	 * Retrieves a random word for the game from specified file location
 	 * @return
 	 */
-	protected String retrieveWord(){
+	protected String retrieveWord() throws Exception{
 		String randomWord = null;
 		WordGenerator generator = new WordGenerator(wordListFile, fileDelimitter);
 		
 		try {
 			randomWord = generator.retrieveRandomWord();
 		} catch (Exception e) {
-			System.err.println("Error attempting to retrieve word; " +  e);
+			throw new Exception("Error attempting to retrieve word for game: " + e);
 		}
 		return randomWord;
 	}
@@ -153,6 +168,56 @@ public class HangMan {
 	}
 	
 	/**
+	 * Checks the single letter guess or the entire word guess against the random Hangman word.
+	 * @param userInput
+	 * @param wordToGuess
+	 */
+	private GuessStatus checkGuess(String userInput, String wordToGuess){
+		GuessStatus status = null;
+		
+		//determine if a single letter or if a entire guess
+		if(userInput.length() < 2){
+			if(wordToGuess.indexOf(userInput) > -1){
+				//found a match
+				
+			}else{
+				//increment the incorrect guesses				
+			}
+			//track guess
+			
+		}else{//check the entire word guess
+			if(userInput.equalsIgnoreCase(wordToGuess)){
+				status = GuessStatus.SOLVED;
+			}else{
+				status = GuessStatus.FAILED;
+			}
+		}
+		
+		return status;
+	}
+	
+	
+	private void trackeGuesses(String guessMade){
+		//track the guess made to ensure they don't make the guess again
+	}
+	
+	/**
+	 * Generates the game message displaying the rules of the Hangman game
+	 * @return
+	 */
+	private String generateGameMessage(){
+		StringBuilder message = new StringBuilder(500);
+		message.append("Welcome to the game of Hangman!\n");
+		message.append("You can may guess one letter at a time. ");
+		if(validator.isAllowMultiCharacterGuess()){
+			message.append("Or you may guess the entire phrase at once.\n");
+		}
+		message.append("Please make your guess");
+		
+		return message.toString();
+	}
+	
+	/**
 	 * Retrieves user input and validates it according to validator settings.
 	 * @return - The validated input
 	 * @throws Exception
@@ -167,16 +232,19 @@ public class HangMan {
 			String input = sc.next();
 			
 			//validate user input
-			validInput = validator.validateInput(input);
-			
+			try{
+				validInput = validator.validateInput(input);	
+			}catch(Exception e){
+				throw new Exception("Error fetching user input ", e);
+			}finally{
+				//close when finish
+				sc.close();
+			}
 			//exit once we get valid input
 			if(validInput) break;
-			else System.out.println(validator.getErrorMessage() + "\nPlease provide a valid guess.");
+			else System.out.println(validator.getErrorMessage());
 		}
-		
-		//close when finish
-		sc.close();
-		
+
 		return userInput;	
 	}
 }
