@@ -26,6 +26,7 @@ public class HangMan {
 	private GuessValidator validator;
 	private int maxIncorrectGuesses;
 	private int guessesMade;
+	private List<String> underscores;
 	
 	//variables for word generation
 	private static final String DEFAULT_FILE_LOC = "./GuessWords/wordListOne.txt";
@@ -35,7 +36,7 @@ public class HangMan {
 	
 	//enum containing the current guess status
 	enum GuessStatus{
-		CORRECT(0), INCORRECT(1), SOLVED(2), FAILED(3);
+		CORRECT(0), INCORRECT(1), SOLVED(2), FAILED(3), PREVIOUS_GUESS(4);
 		
 		private int value;
 		private GuessStatus(int value){
@@ -109,7 +110,7 @@ public class HangMan {
 		String userInput;
 		
 		//display underscores for each letter of word for user
-		List<String> underscores = generateUnderScores(wordToGuess);
+		underscores = generateUnderScores(wordToGuess);
 		
 		//display message about rules
 		System.out.println(generateGameMessage());
@@ -122,8 +123,7 @@ public class HangMan {
 				GuessStatus status = checkGuess(userInput, wordToGuess);
 				
 				switch(status){
-				//if entire word guess, if incorrect game is over
-
+					//determine path based on status
 				}
 				
 			break;
@@ -173,32 +173,55 @@ public class HangMan {
 	 * @param wordToGuess
 	 */
 	private GuessStatus checkGuess(String userInput, String wordToGuess){
-		GuessStatus status = null;
-		
-		//determine if a single letter or if a entire guess
-		if(userInput.length() < 2){
-			if(wordToGuess.indexOf(userInput) > -1){
-				//found a match
-				
-			}else{
-				//increment the incorrect guesses				
-			}
-			//track guess
-			
-		}else{//check the entire word guess
-			if(userInput.equalsIgnoreCase(wordToGuess)){
-				status = GuessStatus.SOLVED;
-			}else{
-				status = GuessStatus.FAILED;
-			}
+		//quick fail if the guess has already been made
+		if(userGuesses.contains(userInput)) {
+			return GuessStatus.PREVIOUS_GUESS;
 		}
+				
+		//determine if a single letter guess or if a entire word guess
+		if(userInput.length() < 2){
+			return validateSingleLetterGuess(userInput, wordToGuess);
+		}else{
+			return valdidateEntireWordGuess(wordToGuess, userInput);
+		}
+	}
+	
+	/**
+	 * Validates if the single letter guess is correctly or incorrectly made
+	 * @param wordToGuess
+	 * @param letterGuess
+	 * @return
+	 */
+	protected GuessStatus validateSingleLetterGuess(String wordToGuess, String letterGuess){
+		GuessStatus status = null;
+		int matchIndex = wordToGuess.toLowerCase().indexOf(letterGuess.toLowerCase());
+		
+		if(matchIndex > -1){
+			//find the matching position within the underscores and replace with letter guess
+			underscores.add(matchIndex, letterGuess);			
+		}else{
+			guessesMade++; //wrong guess, update the incorrect guesses made
+		}
+		//track the guess made whether correct/incorrect
+		userGuesses.add(letterGuess);
 		
 		return status;
 	}
 	
-	
-	private void trackeGuesses(String guessMade){
-		//track the guess made to ensure they don't make the guess again
+	/**
+	 * Validates if the word guess matches the random word to guess
+	 * @param wordToGuess
+	 * @param guessedWord
+	 * @return
+	 */
+	protected GuessStatus valdidateEntireWordGuess(String wordToGuess, String guessedWord){
+		GuessStatus status = null;
+		if(guessedWord.equalsIgnoreCase(wordToGuess)){
+			status = GuessStatus.SOLVED;
+		}else{
+			status = GuessStatus.FAILED;
+		}
+		return status;
 	}
 	
 	/**
@@ -210,7 +233,8 @@ public class HangMan {
 		message.append("Welcome to the game of Hangman!\n");
 		message.append("You can may guess one letter at a time. ");
 		if(validator.isAllowMultiCharacterGuess()){
-			message.append("Or you may guess the entire phrase at once.\n");
+			message.append("Or you may guess the entire word at once.\n");
+			message.append("Careful, if you attempt to guess the entire word, and are wrong, game over! \n");
 		}
 		message.append("Please make your guess");
 		
