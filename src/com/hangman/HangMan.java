@@ -1,12 +1,12 @@
 package com.hangman;
 
-//jdk 1.7
+//jdk 1.8
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-
-
+//log4j 1.x
+import org.apache.log4j.Logger;
 
 //hangman libs
 import com.hangman.generator.WordGenerator;
@@ -22,6 +22,7 @@ import com.hangman.validator.GuessValidator;
  ****************************************************/
 
 public class HangMan {
+	private static final Logger log = Logger.getLogger(HangMan.class.getName());
 	private List<String> userGuesses;
 	private GuessValidator validator;
 	private int maxIncorrectGuesses;
@@ -97,7 +98,7 @@ public class HangMan {
 		try {
 			hg.run();
 		} catch (Exception e) {
-			System.err.println("Error running hangman game: " + e);
+			log.error("Error running hangman game: " + e);
 		}
 	}
 	
@@ -112,20 +113,23 @@ public class HangMan {
 		//display underscores for each letter of word for user
 		underscores = generateUnderScores(wordToGuess);
 		
-		//display message about rules
+		//display games messages, get user input, etc. still using System.out
 		System.out.println(generateGameMessage());
+		System.out.print("The word to guess: " );
+		for (String s : underscores) {
+			System.out.print(s);
+		}
+		System.out.println("\nPlease make your guess");
 
 		//receive and validate user input
 		while(!isSolved && guessesMade <= maxIncorrectGuesses){
 				userInput = getUserInput();
+				log.debug("User input: " + userInput);
 				
 				//determine if a single letter or if a entire guess
 				GuessStatus status = checkGuess(userInput, wordToGuess);
 				
-				switch(status){
-					//determine path based on status
-				}
-				
+				//determine status of user guess
 			break;
 		}
 	}
@@ -161,7 +165,7 @@ public class HangMan {
 			if(c.equals(" ")){
 				wordUnderScores.add(" ");
 			}else{
-				wordUnderScores.add("_");
+				wordUnderScores.add("_ ");
 			}
 		}		
 		return wordUnderScores;
@@ -180,9 +184,11 @@ public class HangMan {
 				
 		//determine if a single letter guess or if a entire word guess
 		if(userInput.length() < 2){
-			return validateSingleLetterGuess(userInput, wordToGuess);
+			log.debug("Checking single letter guess");
+			return checkSingleLetterGuess(userInput, wordToGuess);
 		}else{
-			return valdidateEntireWordGuess(wordToGuess, userInput);
+			log.debug("Checking entire letter guess");
+			return checkEntireWordGuess(wordToGuess, userInput);
 		}
 	}
 	
@@ -192,17 +198,19 @@ public class HangMan {
 	 * @param letterGuess
 	 * @return
 	 */
-	protected GuessStatus validateSingleLetterGuess(String wordToGuess, String letterGuess){
+	protected GuessStatus checkSingleLetterGuess(String wordToGuess, String letterGuess){
 		GuessStatus status = null;
 		int matchIndex = wordToGuess.toLowerCase().indexOf(letterGuess.toLowerCase());
 		
 		if(matchIndex > -1){
+			log.debug("***Match found :" +  matchIndex);
 			//find the matching position within the underscores and replace with letter guess
-			underscores.add(matchIndex, letterGuess);			
+			underscores.remove(matchIndex);
+			underscores.add(matchIndex, letterGuess + " ");			
 		}else{
 			guessesMade++; //wrong guess, update the incorrect guesses made
 		}
-		//track the guess made whether correct/incorrect
+		//track the guess made whether correct or incorrect
 		userGuesses.add(letterGuess);
 		
 		return status;
@@ -214,7 +222,7 @@ public class HangMan {
 	 * @param guessedWord
 	 * @return
 	 */
-	protected GuessStatus valdidateEntireWordGuess(String wordToGuess, String guessedWord){
+	protected GuessStatus checkEntireWordGuess(String wordToGuess, String guessedWord){
 		GuessStatus status = null;
 		if(guessedWord.equalsIgnoreCase(wordToGuess)){
 			status = GuessStatus.SOLVED;
@@ -236,7 +244,6 @@ public class HangMan {
 			message.append("Or you may guess the entire word at once.\n");
 			message.append("Careful, if you attempt to guess the entire word, and are wrong, game over! \n");
 		}
-		message.append("Please make your guess");
 		
 		return message.toString();
 	}
@@ -253,11 +260,11 @@ public class HangMan {
 		//get the user input 
 		Scanner sc = new Scanner(System.in);
 		while(sc.hasNext()){
-			String input = sc.next();
+			userInput = sc.next();
 			
 			//validate user input
 			try{
-				validInput = validator.validateInput(input);	
+				validInput = validator.validateInput(userInput);	
 			}catch(Exception e){
 				throw new Exception("Error fetching user input ", e);
 			}finally{
@@ -266,7 +273,7 @@ public class HangMan {
 			}
 			//exit once we get valid input
 			if(validInput) break;
-			else System.out.println(validator.getErrorMessage());
+			else log.error(validator.getErrorMessage());
 		}
 
 		return userInput;	

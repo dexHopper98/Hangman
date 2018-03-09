@@ -5,11 +5,14 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-//jdk 1.7.x
+//jdk 1.8.x
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
+
+//log4j 1.2.17
+import org.apache.log4j.Logger;
 
 /**************************************************************************
  * <b>Title:</b> com.hangman.generatorWordGenerator.java
@@ -22,6 +25,7 @@ import java.util.Scanner;
  ****************************************************/
 
 public class WordGenerator {
+	private Logger log  = Logger.getLogger(WordGenerator.class.getName());
 	//list of generated words
 	private List<String> generatedWords;
 	
@@ -34,7 +38,7 @@ public class WordGenerator {
 		generatedWords = new ArrayList<>();
 		
 		//attempt to load the file of words
-		loadFromFile(fileLoc, delimiter);
+		loadFromFile(fileLoc, delimiter);		
 	}
 	
 	/**
@@ -82,9 +86,9 @@ public class WordGenerator {
 				generatedWords.add(val);
 			}
 			if(scan != null )scan.close();
-			System.out.println("Number of words loaded: " + generatedWords.size());
+			log.debug("Number of words loaded: " + generatedWords.size());
 		} catch (IOException e) {
-			System.err.println("Error attempting to create file from path:" + e);
+			log.error("Error attempting to create file from path:" + e);
 		}
 	}
 }

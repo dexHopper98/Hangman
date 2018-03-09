@@ -22,7 +22,7 @@ public class GuessValidator implements DataValidator<String> {
 	private boolean allowDigits;
 	private boolean allowSpecialChars;
 	private boolean allowMultiCharacterGuess;
-	private boolean isValidInput;
+	private boolean isValidInput = Boolean.TRUE; //assume input is valid until proven otherwise
 
 	//error message for retrieval if any validation checks fail
 	private String errorMessage;

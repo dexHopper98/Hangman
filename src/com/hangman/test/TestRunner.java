@@ -1,5 +1,9 @@
 package com.hangman.test;
 
+//log4j 1.x
+import org.apache.log4j.Logger;
+
+//JUnit libs
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
@@ -15,18 +19,18 @@ import org.junit.runner.notification.Failure;
  ****************************************************/
 
 public class TestRunner {
-
+	private static final Logger log = Logger.getLogger(TestRunner.class.getName());
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
 		Result result = JUnitCore.runClasses(GuessValidatorTest.class);
 		for (Failure failure :  result.getFailures()) {
-			System.out.println(failure);
+			log.info(failure);
 		}
 		
-		System.out.println("Number of tests ran: " + result.getRunCount());
-		System.out.println("Run time: " + result.getRunTime());
+		log.info("Number of tests ran: " + result.getRunCount());
+		log.info("Run time: " + result.getRunTime());
 	}
 
 }
