@@ -22,7 +22,7 @@ public class GuessValidator implements DataValidator<String> {
 	private boolean allowDigits;
 	private boolean allowSpecialChars;
 	private boolean allowMultiCharacterGuess;
-	private boolean isValidInput = Boolean.TRUE; //assume input is valid until proven otherwise
+	private boolean isValidInput;
 
 	//error message for retrieval if any validation checks fail
 	private String errorMessage;
@@ -59,6 +59,7 @@ public class GuessValidator implements DataValidator<String> {
 			setErrorMessage("Cannot validate string of size 0, or null");
 			return false;
 		}
+		isValidInput = Boolean.TRUE; //Start validation process by assuming input is valid, until proven otherwise
 		
 		//determine if digits are allowed
 		isValidInput = checkDigits(input);
@@ -68,10 +69,9 @@ public class GuessValidator implements DataValidator<String> {
 		
 		//determine if an entire phrase is allowed
 		isValidInput = checkMultiCharacterGuess(input);
-				
+		
 		//determine if uppercase characters are allowed
 		isValidInput = checkUpperCase(input);
-		
 		return isValidInput;
 	}
 	
