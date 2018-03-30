@@ -24,10 +24,12 @@ import com.hangman.validator.GuessValidator;
 public class HangMan {
 	private static final Logger log = Logger.getLogger(HangMan.class.getName());
 	private List<String> userGuesses;
+	private Scanner sc;
 	private GuessValidator validator;
 	private int maxIncorrectGuesses;
 	private int guessesMade;
 	private List<String> underscores;
+	private static final String UNDERSCORE_WITH_SPACE = "_ "; 
 	
 	//variables for word generation
 	private static final String DEFAULT_FILE_LOC = "./GuessWords/wordListOne.txt";
@@ -108,7 +110,7 @@ public class HangMan {
 	 */
 	public void run() throws Exception{
 		String wordToGuess = retrieveGuessWord();	
-		boolean isSolved = false;
+		boolean keepGuessing = true;
 		String userInput;
 		
 		//populate underscores for each letter of word for user
@@ -118,16 +120,40 @@ public class HangMan {
 		displayGameInfo();
 		
 		//receive and validate user input
-		while(!isSolved && guessesMade <= maxIncorrectGuesses){
+		while(keepGuessing && guessesMade < maxIncorrectGuesses){
 				userInput = getUserInput();
 				log.debug("User input: " + userInput);
 				
 				//determine status of user guess
 				GuessStatus status = checkGuess(userInput, wordToGuess);
 				
+				switch(status){
+				case CORRECT : System.out.println("Correct guess! Please make another guess.");
+					break;
+				case INCORRECT : 
+					System.out.println("Incorrect guess. Please make another guess.");
+					System.out.println("Guesses left: " + (maxIncorrectGuesses - guessesMade));
+					break;
+				case PREVIOUS_GUESS : System.out.println("Letter guess already made. Please make another guess.");
+					break;
+				case SOLVED : 
+					System.out.println("Congraulations, word has been solved: " + wordToGuess);
+					keepGuessing = false;
+					break;
+				case FAILED : 
+					System.out.println("Sorry, failed to solve the word. The word to guess was: " + wordToGuess);
+					keepGuessing = false;
+					break;
+				default: break;
+				}
 				
-			break;
+				printUnderScores();
 		}
+		
+		if(guessesMade == maxIncorrectGuesses){
+			System.out.println("\nSorry, failed to solve the word. The word to guess was: " + wordToGuess);
+		}
+		cleanUp();
 	}
 	
 	/**
@@ -153,36 +179,35 @@ public class HangMan {
 	 */
 	private void populateUnderScores(String word){
 		underscores = new ArrayList<>();
-		String[] chars = word.split("");//first index will be a blank
+		String[] chars = word.split("");
 		
 		//populate list with underscores matching given word
-		for (int i = 1; i < chars.length; i++) {
+		for (int i = 0; i < chars.length; i++) {
 			String c = chars[i];
 			if(c.equals(" ")){
 				underscores.add(" ");
 			}else{
-				underscores.add("_ ");
+				underscores.add(UNDERSCORE_WITH_SPACE);
 			}
 		}		
 	}
 	
 	/**
+	/**
 	 * Helper method to display information(rules, word to guess, etc.) to user about the game
 	 */
-	private void displayGameInfo(){
+	protected void displayGameInfo(){
 		System.out.println(generateGameMessage());
-		System.out.println("\nPlease make your guess");
-		System.out.print("The word to guess is: " );
-		for (String s : underscores) {
-			System.out.print(s);
-		}
+		System.out.print("\nPlease make your guess \nThe word to guess is: ");
+		printUnderScores();
+		System.out.println();
 	}
 	
 	/**
 	 * Generates the game message displaying the rules of the Hangman game
 	 * @return
 	 */
-	private String generateGameMessage(){
+	protected String generateGameMessage(){
 		StringBuilder message = new StringBuilder(500);
 		message.append("Welcome to the game of Hangman!\n");
 		message.append("You can may guess one letter at a time. ");
@@ -195,16 +220,26 @@ public class HangMan {
 	}
 	
 	/**
+	 * Helper to quickly print current underscores for the word to guess
+	 */
+	protected void printUnderScores(){
+		//TODO use a JAVA 8 approach here instead, remove method
+		for (String s : underscores) {
+			System.out.print(s);
+		}
+	}
+	
+	/**
 	 * Retrieves user input and validates it according to validator settings.
 	 * @return - The validated input
 	 * @throws Exception
 	 */
 	private String getUserInput() throws Exception{
-		String userInput = null;
+		String userInput = "";
 		boolean validInput = false;
 		
 		//get the user input 
-		Scanner sc = new Scanner(System.in);
+		sc = new Scanner(System.in);
 		try{
 			while(sc.hasNext()){
 				//get user input and validate
@@ -213,12 +248,10 @@ public class HangMan {
 
 				//exit once we get valid input
 				if(validInput) break;
-				else System.out.println(validator.getErrorMessage());
+				else System.out.println(validator.getErrorMessage() + ". Please give a valid character.");
 			}			
 		}catch(Exception e){
 			throw new Exception("Error fetching user input ", e);
-		}finally{
-			sc.close(); //close when finish
 		}
 
 		return userInput;	
@@ -237,31 +270,31 @@ public class HangMan {
 				
 		//determine if a single letter guess or if a entire word guess
 		if(userInput.length() == 1){
-			log.debug("Checking single letter guess");
 			return checkSingleLetterGuess(userInput, wordToGuess);
 		}else{
-			log.debug("Checking entire letter guess");
 			return checkEntireWordGuess(wordToGuess, userInput);
 		}
 	}
 	
 	/**
 	 * Validates if the single letter guess is correctly or incorrectly made
+	 * @param letterGuess	   
 	 * @param wordToGuess
-	 * @param letterGuess
 	 * @return
 	 */
-	private GuessStatus checkSingleLetterGuess(String wordToGuess, String letterGuess){
-		GuessStatus status = null;
-		int matchIndex = wordToGuess.toLowerCase().indexOf(letterGuess.toLowerCase());
-		
-		if(matchIndex > -1){
-			log.debug("***Match found :" +  matchIndex);
-			//find the matching position within the underscores and replace with letter guess
-			underscores.remove(matchIndex);
-			underscores.add(matchIndex, letterGuess + " ");			
+	private GuessStatus checkSingleLetterGuess(String letterGuess, String wordToGuess){
+		GuessStatus status = GuessStatus.CORRECT;
+		boolean match = wordToGuess.toLowerCase().indexOf(letterGuess.toLowerCase()) > -1;
+
+		if(match){
+			//update all underscore occurrences that correspond to letter guess
+			updateUnderscores(letterGuess, wordToGuess, 0);
+			
+			//check if the word is complete
+			if(!underscores.contains(UNDERSCORE_WITH_SPACE)) status = GuessStatus.SOLVED;
 		}else{
 			guessesMade++; //wrong guess, update the incorrect guesses made
+			status = GuessStatus.INCORRECT;
 		}
 		//track the guess made whether correct or incorrect
 		userGuesses.add(letterGuess);
@@ -270,12 +303,30 @@ public class HangMan {
 	}
 	
 	/**
-	 * Validates if the word guess matches the random word to guess
+	 * Updates corresponding indices in underscores with matching letter guess. Continues to call itself
+	 * until all occurrences have been replaced.
+	 * @param letterGuess
 	 * @param wordToGuess
+	 * @param startIndex
+	 */
+	private void updateUnderscores(String letterGuess, String wordToGuess, int startIndex){
+		int matchIndex = wordToGuess.toLowerCase().indexOf(letterGuess.toLowerCase(), startIndex);
+		if(matchIndex  == -1) return; // no more matches, end
+		
+		underscores.remove(matchIndex);
+		underscores.add(matchIndex, letterGuess + " ");
+		
+		//recursively call until all occurrences of letterGuess have been updated in underscores
+		updateUnderscores(letterGuess, wordToGuess, matchIndex + 1);
+	}
+	
+	/**
+	 * Validates if the word guess matches the random word to guess
 	 * @param guessedWord
+	 * @param wordToGuess
 	 * @return
 	 */
-	private GuessStatus checkEntireWordGuess(String wordToGuess, String guessedWord){
+	private GuessStatus checkEntireWordGuess(String guessedWord, String wordToGuess){
 		GuessStatus status = null;
 		if(guessedWord.equalsIgnoreCase(wordToGuess)){
 			status = GuessStatus.SOLVED;
@@ -283,5 +334,14 @@ public class HangMan {
 			status = GuessStatus.FAILED;
 		}
 		return status;
+	}
+	
+	/**
+	 * Performs an clean up activities for class
+	 */
+	private void cleanUp(){
+		if(sc != null){
+			sc.close();
+		}
 	}
 }
